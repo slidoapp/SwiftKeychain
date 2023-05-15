@@ -12,6 +12,9 @@ DerivedData/
 # Vim swap files
 .*.sw?
 
+# Swift
+.build/
+
 # XCode
 *.bak
 xcuserdata/
