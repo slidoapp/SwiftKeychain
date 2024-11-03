@@ -4,9 +4,9 @@
 ## Abstract
 Swift wrapper for working with the Keychain API implemented with Protocol Oriented Programming.
 
-You create an implementation of the <code>KeychainGenericPasswordType</code> protocol that encapsulates the data that you want to store in the <code>Keychain</code>. Most of the implementation is done for you by using default protocol implementations, such as setting the default service name and access mode (<code>kSecAttrAccessibleWhenUnlocked</code>).
+You create an implementation of the `KeychainGenericPasswordType` protocol that encapsulates the data that you want to store in the `Keychain`. Most of the implementation is done for you by using default protocol implementations, such as setting the default service name and access mode (`kSecAttrAccessibleWhenUnlocked`).
 
-Then you call the <code>KeychainItemType</code> methods to save, remove or fetch the item from the provided as argument <code>KeychainServiceType</code> protocol implementation.
+Then you call the `KeychainItemType` methods to save, remove or fetch the item from the provided as argument `KeychainServiceType` protocol implementation.
 
 ![SwiftKeychain Protocols](https://raw.githubusercontent.com/yankodimitrov/SwiftKeychain/Keychain-1.0/Resources/Protocols.png)
 
@@ -14,7 +14,6 @@ Let's say we want to store the access token and username for an Instagram accoun
 
 ```swift
 struct InstagramAccount: KeychainGenericPasswordType {
-    
     let accountName: String
     let token: String
     var data = [String: AnyObject]()
@@ -33,34 +32,29 @@ struct InstagramAccount: KeychainGenericPasswordType {
     }
 }
 ```
-In <code>var dataToStore: [String: AnyObject]</code> you return the Dictionary that you want to be saved in the Keychain and when you fetch the item from the Keychain its data will be populated in your <code>var data: [String: AnyObject]</code> property.
+
+In `var dataToStore: [String: AnyObject]` you return the Dictionary that you want to be saved in the Keychain and when you fetch the item from the Keychain its data will be populated in your `var data: [String: AnyObject]` property.
 
 ### Save Item
 ```swift
 let newAccount = InstagramAccount(name: "John", accessToken: "123456")
 
 do {
-    
     try newAccount.saveInKeychain()
-
 } catch {
-    
     print(error)
 }
 ```
 > [!NOTE]  
-> The provided implementation of the <code>KeychainServiceType</code> protocol will replace the item if it already exists in the Keychain database.
+> The provided implementation of the `KeychainServiceType` protocol will replace the item if it already exists in the Keychain database.
 
 ### Remove Item
 ```swift
 let account = InstagramAccount(name: "John")
 
 do {
-    
     try account.removeFromKeychain()
-
 } catch {
-    
     print(error)
 }
 ```
@@ -70,16 +64,12 @@ do {
 var account = InstagramAccount(name: "John")
 
 do {
-    
     try account.fetchFromKeychain()
     
     if let token = account.accessToken {
-
         print("name: \(account.accountName), token: \(token)")
     }
-
 } catch {
-
     print(error)
 }
 ```
@@ -88,7 +78,7 @@ do {
 SwiftKeychain requires Swift 3.0 and Xcode 8 and supports iOS, OS X, watchOS and tvOS.
 
 #### Manually
-Copy the <code>Keychain/Keychain.swift</code> file to your project.
+Copy the `Keychain/Keychain.swift` file to your project.
 
 #### Carthage
 Add the following line to your [Cartfile](https://github.com/carthage/carthage)
