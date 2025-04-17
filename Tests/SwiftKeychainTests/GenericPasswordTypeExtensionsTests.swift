@@ -12,9 +12,9 @@ import XCTest
 struct MockGenericPasswordItem: KeychainGenericPasswordType {
     
     let accountName: String
-    var data = [String: Any]()
+    var data = KeychainData()
     
-    var dataToStore: [String: Any] {
+    var dataToStore: KeychainData {
         
         return ["token": "123456"]
     }

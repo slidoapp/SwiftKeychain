@@ -11,14 +11,14 @@ import XCTest
 
 struct MockKeychainItem: KeychainItemType {
     
-    var attributes: [String: Any] {
+    var attributes: KeychainAttributes {
         
         return [String(kSecClass): kSecClassGenericPassword]
     }
     
-    var data = [String: Any]()
+    var data = KeychainData()
     
-    var dataToStore: [String: Any] {
+    var dataToStore: KeychainData {
         
         return ["token": "123456"]
     }
@@ -30,21 +30,21 @@ class MockKeychain: KeychainServiceType {
     var isRemoveCalled = false
     var isFetchCalled = false
     
-    func insertItemWithAttributes(_ attributes: [String: Any]) throws {
+    func insertItemWithAttributes(_ attributes: KeychainAttributes) throws {
         
         isInsertCalled = true
     }
     
-    func removeItemWithAttributes(_ attributes: [String: Any]) throws {
+    func removeItemWithAttributes(_ attributes: KeychainAttributes) throws {
         
         isRemoveCalled = true
     }
     
-    func fetchItemWithAttributes(_ attributes: [String: Any]) throws -> [String: Any]? {
+    func fetchItemWithAttributes(_ attributes: KeychainAttributes) throws -> KeychainItem? {
         
         isFetchCalled = true
         
-        let data = NSKeyedArchiver.archivedData(withRootObject: ["token": "123456"])
+        let data = try NSKeyedArchiver.archivedData(withRootObject: ["token": "123456"], requiringSecureCoding: false)
         
         return [String(kSecValueData): data]
     }
@@ -59,12 +59,12 @@ class KeychainItemTypeExtensionsTests: XCTestCase {
         XCTAssertEqual(item.accessMode, String(kSecAttrAccessibleWhenUnlocked), "Should return the default access mode")
     }
     
-    func testAttributesToSave() {
+    func testAttributesToSave() throws {
         
         let item = MockKeychainItem()
         
         let expectedSecClass = String(kSecClassGenericPassword)
-        let expectedData = NSKeyedArchiver.archivedData(withRootObject: ["token": "123456"])
+        let expectedData = try NSKeyedArchiver.archivedData(withRootObject: ["token": "123456"], requiringSecureCoding: false)
         
         let attriburesToSave = item.attributesToSave
         
@@ -122,32 +122,32 @@ class KeychainItemTypeExtensionsTests: XCTestCase {
         XCTAssertEqual(secReturnAttributes, true, "Should contain true in kSecReturnAttributes")
     }
     
-    func testSaveInKeychain() {
+    func testSaveInKeychain() throws {
         
         let keychain = MockKeychain()
         let item = MockKeychainItem()
         
-        try! item.saveInKeychain(keychain)
+        try item.saveInKeychain(keychain)
         
         XCTAssertEqual(keychain.isInsertCalled, true, "Should call the Keychain to insert the item")
     }
     
-    func testRemoveFromKeychain() {
+    func testRemoveFromKeychain() throws {
         
         let keychain = MockKeychain()
         let item = MockKeychainItem()
         
-        try! item.removeFromKeychain(keychain)
+        try item.removeFromKeychain(keychain)
         
         XCTAssertEqual(keychain.isRemoveCalled, true, "Should call the keychain to remove the item")
     }
     
-    func testFetchFromKeychain() {
+    func testFetchFromKeychain() throws {
         
         let keychain = MockKeychain()
         var item = MockKeychainItem()
         
-        let result = try! item.fetchFromKeychain(keychain)
+        let result = try item.fetchFromKeychain(keychain)
         
         let token = result.data["token"] as? String ?? ""
         
