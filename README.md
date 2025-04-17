@@ -1,14 +1,14 @@
 # SwiftKeychain
-[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
+> Swift wrapper for working with the Keychain API implemented with protocol oriented programming.
 
 ## Abstract
-Swift wrapper for working with the Keychain API implemented with Protocol Oriented Programming.
 
 You create an implementation of the `KeychainGenericPasswordType` protocol that encapsulates the data that you want to store in the `Keychain`. Most of the implementation is done for you by using default protocol implementations, such as setting the default service name and access mode (`kSecAttrAccessibleWhenUnlocked`).
 
 Then you call the `KeychainItemType` methods to save, remove or fetch the item from the provided as argument `KeychainServiceType` protocol implementation.
 
-![SwiftKeychain Protocols](https://raw.githubusercontent.com/yankodimitrov/SwiftKeychain/Keychain-1.0/Resources/Protocols.png)
+![SwiftKeychain Protocols](https://github.com/slidoapp/SwiftKeychain/blob/master/Resources/Protocols.png?raw=true)
 
 Let's say we want to store the access token and username for an Instagram account in the Keychain:
 
@@ -75,21 +75,13 @@ do {
 ```
 
 ## Installation
-SwiftKeychain requires Swift 3.0 and Xcode 8 and supports iOS, OS X, watchOS and tvOS.
 
-#### Manually
-Copy the `Keychain/Keychain.swift` file to your project.
+**SwiftKeychain** package requires Swift 5.5 and supports macOS, iOS, watchOS, tvOS and visionOS.
 
-#### Carthage
-Add the following line to your [Cartfile](https://github.com/carthage/carthage)
+### Install
+
 ```swift
-github "yankodimitrov/SwiftKeychain" "master"
-```
-
-#### CocoaPods
-Add the following line to your [Podfile](https://guides.cocoapods.org/)
-```swift
-pod “SwiftKeychain”
+.package(url: "https://github.com/slidoapp/SwiftKeychain.git", from: "2.0.0")
 ```
 
 ## License

@@ -1,13 +1,15 @@
+// SPDX-License-Identifier: MIT
 //
 //  KeychainTests.swift
 //  KeychainTests
 //
 //  Created by Yanko Dimitrov on 2/6/16.
 //  Copyright © 2016 Yanko Dimitrov. All rights reserved.
+//  Copyright © 2024 Cisco Systems, Inc.
 //
 
 import XCTest
-@testable import Keychain
+@testable import SwiftKeychain
 
 class KeychainTests: XCTestCase {
     
@@ -23,7 +25,7 @@ class KeychainTests: XCTestCase {
     
     func testInsertItemWithAttributes() {
         
-        let item = MockGenericPasswordItem(accountName: "John")
+        let item = MockGenericPasswordItem(accountName: "John_testInsertItemWithAttributes")
         let keychain = Keychain()
         var hasError = false
         
@@ -59,7 +61,7 @@ class KeychainTests: XCTestCase {
     
     func testRemoveItemWithAttributes() {
         
-        let item = MockGenericPasswordItem(accountName: "John")
+        let item = MockGenericPasswordItem(accountName: "John_testRemoveItemWithAttributes")
         let keychain = Keychain()
         var hasError = false
         
@@ -97,7 +99,7 @@ class KeychainTests: XCTestCase {
     
     func testFetchItemWithAttributes() {
         
-        let item = MockGenericPasswordItem(accountName: "John")
+        let item = MockGenericPasswordItem(accountName: "John_testFetchItemWithAttributes")
         let keychain = Keychain()
         var hasError = false
         var fetchedToken = ""
@@ -143,7 +145,7 @@ class KeychainTests: XCTestCase {
     
     func testFetchItemWithAttributesReturnsNilIfResultIsNotADictionary() {
         
-        let item = MockGenericPasswordItem(accountName: "John")
+        let item = MockGenericPasswordItem(accountName: "John_testFetchItemWithAttributesReturnsNilIfResultIsNotADictionary")
         let keychain = Keychain()
         
         try! keychain.insertItemWithAttributes(item.attributes)

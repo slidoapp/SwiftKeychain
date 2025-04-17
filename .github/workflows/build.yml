@@ -1,0 +1,74 @@
+name: build
+
+on:
+  push:
+  pull_request:
+    branches: [ 'master', 'main' ]
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ['swift6.0', 'swift5.10', 'swift5.5']
+        include:
+          - swift: 'swift6.0'
+            xcode-path: '/Applications/Xcode_16.1.0.app'
+            macos: 'macos-15'
+          - swift: 'swift5.10'
+            xcode-path: '/Applications/Xcode_15.4.0.app'
+            macos: 'macos-14'
+          - swift: 'swift5.5'
+            xcode-path: '/Applications/Xcode_15.2.0.app'
+            macos: 'macos-14'
+
+    name: 'build-${{ matrix.swift }}'
+
+    env:
+      DEVELOPER_DIR: ${{ matrix.xcode-path }}
+
+    runs-on: ${{ matrix.macos }}
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: swift version
+      run: swift --version
+
+    - name: build
+      run: swift build -v
+
+    - name: run tests
+      continue-on-error: true
+      run: swift test --parallel --xunit-output 'SwiftKeychain-tests.xml'
+  
+    - name: tests report
+      uses: dorny/test-reporter@31a54ee7ebcacc03a09ea97a7e5465a47b84aea5 # 1.9.1
+      if: always()
+      id: tests-report
+      with:
+        name: 'tests-report-${{ matrix.swift }}'
+        path: 'SwiftKeychain-tests.xml'
+        reporter: swift-xunit
+        fail-on-error: true
+
+    - name: summary
+      if: always()
+      run: |
+        {
+          echo "# Test Summary Report"
+          echo ""
+          echo "System details"
+          echo ""
+          echo "Swift: \`${{ matrix.swift }}\`  "
+          echo "macOS: \`${{ matrix.macos }}\`  "
+          echo "Xcode: \`${{ matrix.xcode-path }}\` "
+          echo ""
+          echo "Unit Tests Conclusion: \`${{ steps.tests-report.outputs.conclusion }}\`  "
+          echo "Unit Tests Report: <${{ steps.tests-report.outputs.url_html }}>"
+        } >> $GITHUB_STEP_SUMMARY

@@ -112,6 +112,9 @@ extension KeychainGenericPasswordType {
 // MARK: - Keychain
 
 public struct Keychain: KeychainServiceType {
+
+    public init() {
+    }
     
     internal func errorForStatusCode(_ statusCode: OSStatus) -> NSError {
         
