@@ -11,14 +11,14 @@ import XCTest
 
 struct MockKeychainItem: KeychainItemType {
     
-    var attributes: [String: Any] {
+    var attributes: KeychainAttributes {
         
         return [String(kSecClass): kSecClassGenericPassword]
     }
     
-    var data = [String: Any]()
+    var data = KeychainData()
     
-    var dataToStore: [String: Any] {
+    var dataToStore: KeychainData {
         
         return ["token": "123456"]
     }
@@ -30,17 +30,17 @@ class MockKeychain: KeychainServiceType {
     var isRemoveCalled = false
     var isFetchCalled = false
     
-    func insertItemWithAttributes(_ attributes: [String: Any]) throws {
+    func insertItemWithAttributes(_ attributes: KeychainAttributes) throws {
         
         isInsertCalled = true
     }
     
-    func removeItemWithAttributes(_ attributes: [String: Any]) throws {
+    func removeItemWithAttributes(_ attributes: KeychainAttributes) throws {
         
         isRemoveCalled = true
     }
     
-    func fetchItemWithAttributes(_ attributes: [String: Any]) throws -> [String: Any]? {
+    func fetchItemWithAttributes(_ attributes: KeychainAttributes) throws -> KeychainItem? {
         
         isFetchCalled = true
         

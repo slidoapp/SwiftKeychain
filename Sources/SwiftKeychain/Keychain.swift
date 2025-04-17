@@ -8,24 +8,28 @@
 
 import Foundation
 
+public typealias KeychainAttributes = [String: any Sendable]
+public typealias KeychainData = [String: any Sendable]
+public typealias KeychainItem = [String: any Sendable]
+
 // MARK: - KeychainServiceType
 
 public protocol KeychainServiceType {
     
-    func insertItemWithAttributes(_ attributes: [String: Any]) throws
-    func removeItemWithAttributes(_ attributes: [String: Any]) throws
-    func fetchItemWithAttributes(_ attributes: [String: Any]) throws -> [String: Any]?
+    func insertItemWithAttributes(_ attributes: KeychainAttributes) throws
+    func removeItemWithAttributes(_ attributes: KeychainAttributes) throws
+    func fetchItemWithAttributes(_ attributes: KeychainAttributes) throws -> KeychainItem?
 }
 
 // MARK: - KeychainItemType
 
 public protocol KeychainItemType {
     
-    var accessMode: String {get}
-    var accessGroup: String? {get}
-    var attributes: [String: Any] {get}
-    var data: [String: Any] {get set}
-    var dataToStore: [String: Any] {get}
+    var accessMode: String { get }
+    var accessGroup: String? { get }
+    var attributes: KeychainAttributes { get }
+    var data: KeychainData { get set }
+    var dataToStore: KeychainData { get }
 }
 
 extension KeychainItemType {
@@ -43,7 +47,7 @@ extension KeychainItemType {
 
 extension KeychainItemType {
     
-    internal var attributesToSave: [String: Any] {
+    internal var attributesToSave: KeychainAttributes {
         
         var itemAttributes = attributes
         let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: dataToStore, requiringSecureCoding: false)
@@ -58,14 +62,14 @@ extension KeychainItemType {
         return itemAttributes
     }
     
-    internal func dataFromAttributes(_ attributes: [String: Any]) -> [String: Any]? {
+    internal func dataFromAttributes(_ attributes: KeychainAttributes) -> KeychainData? {
         
         guard let valueData = attributes[String(kSecValueData)] as? Data else { return nil }
         
-        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSDictionary.self, from: valueData) as? [String : Any]
+        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSDictionary.self, from: valueData) as? KeychainData
     }
     
-    internal var attributesForFetch: [String: Any] {
+    internal var attributesForFetch: KeychainAttributes {
         
         var itemAttributes = attributes
         
@@ -85,8 +89,8 @@ extension KeychainItemType {
 
 public protocol KeychainGenericPasswordType: KeychainItemType {
     
-    var serviceName: String {get}
-    var accountName: String {get}
+    var serviceName: String { get }
+    var accountName: String { get }
 }
 
 extension KeychainGenericPasswordType {
@@ -96,9 +100,9 @@ extension KeychainGenericPasswordType {
         return "swift.keychain.service"
     }
     
-    public var attributes: [String: Any] {
+    public var attributes: KeychainAttributes {
     
-        var attributes = [String: Any]()
+        var attributes = KeychainAttributes()
         
         attributes[String(kSecClass)] = kSecClassGenericPassword
         attributes[String(kSecAttrAccessible)] = accessMode
@@ -123,7 +127,7 @@ public struct Keychain: KeychainServiceType {
     
     // Inserts or updates a keychain item with attributes
     
-    public func insertItemWithAttributes(_ attributes: [String: Any]) throws {
+    public func insertItemWithAttributes(_ attributes: KeychainAttributes) throws {
         
         var statusCode = SecItemAdd(attributes as CFDictionary, nil)
         
@@ -139,7 +143,7 @@ public struct Keychain: KeychainServiceType {
         }
     }
     
-    public func removeItemWithAttributes(_ attributes: [String: Any]) throws {
+    public func removeItemWithAttributes(_ attributes: KeychainAttributes) throws {
         
         let statusCode = SecItemDelete(attributes as CFDictionary)
         
@@ -149,7 +153,7 @@ public struct Keychain: KeychainServiceType {
         }
     }
     
-    public func fetchItemWithAttributes(_ attributes: [String: Any]) throws -> [String: Any]? {
+    public func fetchItemWithAttributes(_ attributes: KeychainAttributes) throws -> KeychainItem? {
         
         var result: AnyObject?
         
@@ -160,7 +164,7 @@ public struct Keychain: KeychainServiceType {
             throw errorForStatusCode(statusCode)
         }
         
-        if let result = result as? [String: Any] {
+        if let result = result as? KeychainItem {
             
             return result
         }
