@@ -1,8 +1,19 @@
+### SwiftPackageManager ###
+Packages
+.build/
+.swiftpm/
+xcuserdata
+DerivedData/
+*.xcodeproj
+
 # Mac OS X hidden files
 .DS_Store
 
 # Vim swap files
 .*.sw?
+
+# Swift
+.build/
 
 # XCode
 *.bak
