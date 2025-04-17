@@ -46,7 +46,7 @@ extension KeychainItemType {
     internal var attributesToSave: [String: Any] {
         
         var itemAttributes = attributes
-        let archivedData = NSKeyedArchiver.archivedData(withRootObject: dataToStore)
+        let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: dataToStore, requiringSecureCoding: false)
         
         itemAttributes[String(kSecValueData)] = archivedData
         
@@ -62,7 +62,7 @@ extension KeychainItemType {
         
         guard let valueData = attributes[String(kSecValueData)] as? Data else { return nil }
         
-        return NSKeyedUnarchiver.unarchiveObject(with: valueData) as? [String: Any] ?? nil
+        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSDictionary.self, from: valueData) as? [String : Any]
     }
     
     internal var attributesForFetch: [String: Any] {
