@@ -59,13 +59,13 @@ class KeychainTests: XCTestCase {
         XCTAssertEqual(hasError, true, "Should throw error when the operation fails")
     }
     
-    func testRemoveItemWithAttributes() {
+    func testRemoveItemWithAttributes() throws {
         
         let item = MockGenericPasswordItem(accountName: "John_testRemoveItemWithAttributes")
         let keychain = Keychain()
         var hasError = false
         
-        try! keychain.insertItemWithAttributes(item.attributes)
+        try keychain.insertItemWithAttributes(item.attributes)
         
         do {
         
@@ -97,14 +97,14 @@ class KeychainTests: XCTestCase {
         XCTAssertEqual(hasError, true, "Should throw error when the operation fails")
     }
     
-    func testFetchItemWithAttributes() {
+    func testFetchItemWithAttributes() throws {
         
         let item = MockGenericPasswordItem(accountName: "John_testFetchItemWithAttributes")
         let keychain = Keychain()
         var hasError = false
         var fetchedToken = ""
         
-        try! keychain.insertItemWithAttributes(item.attributesToSave)
+        try keychain.insertItemWithAttributes(item.attributesToSave)
         
         do {
             
@@ -143,14 +143,14 @@ class KeychainTests: XCTestCase {
         XCTAssertEqual(hasError, true, "Should throw error when the operation fails")
     }
     
-    func testFetchItemWithAttributesReturnsNilIfResultIsNotADictionary() {
+    func testFetchItemWithAttributesReturnsNilIfResultIsNotADictionary() throws {
         
         let item = MockGenericPasswordItem(accountName: "John_testFetchItemWithAttributesReturnsNilIfResultIsNotADictionary")
         let keychain = Keychain()
         
-        try! keychain.insertItemWithAttributes(item.attributes)
+        try keychain.insertItemWithAttributes(item.attributes)
         
-        let result = try! keychain.fetchItemWithAttributes(item.attributes)
+        let result = try keychain.fetchItemWithAttributes(item.attributes)
         
         XCTAssertNil(result, "Should return nil if the result is not a dictionary")
     }
