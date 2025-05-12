@@ -8,7 +8,7 @@ You create an implementation of the `KeychainGenericPasswordType` protocol that 
 
 Then you call the `KeychainItemType` methods to save, remove or fetch the item from the provided as argument `KeychainServiceType` protocol implementation.
 
-![SwiftKeychain Protocols](https://github.com/slidoapp/SwiftKeychain/blob/master/Resources/Protocols.png?raw=true)
+![SwiftKeychain Protocols](Resources/Protocols.png)
 
 Let's say we want to store the access token and username for an Instagram account in the Keychain:
 
@@ -16,9 +16,9 @@ Let's say we want to store the access token and username for an Instagram accoun
 struct InstagramAccount: KeychainGenericPasswordType {
     let accountName: String
     let token: String
-    var data = [String: AnyObject]()
+    var data = KeychainData()
     
-    var dataToStore: [String: AnyObject] {
+    var dataToStore: KeychainData {
         return ["token": token]
     }
     
@@ -33,7 +33,7 @@ struct InstagramAccount: KeychainGenericPasswordType {
 }
 ```
 
-In `var dataToStore: [String: AnyObject]` you return the Dictionary that you want to be saved in the Keychain and when you fetch the item from the Keychain its data will be populated in your `var data: [String: AnyObject]` property.
+In `var dataToStore: KeychainData` you return the Dictionary (`KeychainData` is just an alias for `[String: any Sendable]`) that you want to be saved in the Keychain and when you fetch the item from the Keychain its data will be populated in your `var data: KeychainData` property.
 
 ### Save Item
 ```swift
@@ -73,6 +73,44 @@ do {
     print(error)
 }
 ```
+
+### Support for classes
+By default, stored data supports only value types such as strings and numbers. If you want to store objects of any class (for example, `NSDate`) in the Keychain, you need to implement the `storedClasses` property of the `KeychainItemType` protocol. In this property, you must explicitly list all the class types that will be stored:
+
+```swift
+struct InstagramAccount: KeychainGenericPasswordType {
+    let accountName: String
+    let token: String
+    let tokenDate: NSDate
+    var data = KeychainData()
+    
+    var dataToStore: KeychainData {
+        return [
+            "token": token,
+            "tokenDate": tokenDate
+        ]
+    }
+        
+    var storedClasses: [AnyClass] {
+        return [NSDate.self]
+    }
+    
+    var accessToken: String? {
+        return data["token"] as? String
+    }
+
+    var accessTokenDate: NSDate? {
+        return data["tokenDate"] as? NSDate
+    }
+    
+    init(name: String, accessToken: String, accessTokenDate: NSDate) {
+        accountName = name
+        token = accessToken
+        tokenDate = accessTokenDate
+    }
+}
+```
+
 
 ## Installation
 
