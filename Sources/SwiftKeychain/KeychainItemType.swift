@@ -16,6 +16,7 @@ public protocol KeychainItemType {
     var attributes: KeychainAttributes { get }
     var data: KeychainData { get set }
     var dataToStore: KeychainData { get }
+    var storedClasses: [AnyClass] { get }
 }
 
 extension KeychainItemType {
@@ -29,6 +30,12 @@ extension KeychainItemType {
         
         return nil
     }
+    
+    public var storedClasses: [AnyClass] {
+        
+        return []
+    }
+
 }
 
 extension KeychainItemType {
@@ -36,7 +43,7 @@ extension KeychainItemType {
     internal var attributesToSave: KeychainAttributes {
         
         var itemAttributes = attributes
-        let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: dataToStore, requiringSecureCoding: false)
+        let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: dataToStore, requiringSecureCoding: true)
         
         itemAttributes[String(kSecValueData)] = archivedData
         
@@ -48,11 +55,11 @@ extension KeychainItemType {
         return itemAttributes
     }
     
-    internal func dataFromAttributes(_ attributes: KeychainAttributes) -> KeychainData? {
+    internal func dataFromAttributes(_ attributes: KeychainAttributes) throws -> KeychainData? {
         
         guard let valueData = attributes[String(kSecValueData)] as? Data else { return nil }
         
-        return try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSDictionary.self, from: valueData) as? KeychainData
+        return try NSKeyedUnarchiver.unarchivedObject(ofClasses: [NSDictionary.self] + storedClasses, from: valueData) as? KeychainData
     }
     
     internal var attributesForFetch: KeychainAttributes {
@@ -88,7 +95,7 @@ extension KeychainItemType {
     public mutating func fetchFromKeychain(_ keychain: KeychainServiceType = Keychain()) throws -> Self {
         
         if  let result = try keychain.fetchItemWithAttributes(attributesForFetch),
-            let itemData = dataFromAttributes(result) {
+            let itemData = try dataFromAttributes(result) {
             
             data = itemData
         }
