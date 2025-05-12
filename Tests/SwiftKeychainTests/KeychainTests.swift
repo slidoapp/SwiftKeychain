@@ -27,120 +27,93 @@ class KeychainTests: XCTestCase {
         
         let item = MockGenericPasswordItem(accountName: "John_testInsertItemWithAttributes")
         let keychain = Keychain()
-        var hasError = false
         
-        do {
-            
-            try keychain.insertItemWithAttributes(item.attributes)
-        
-        } catch {
-            
-            hasError = true
-        }
-        
-        XCTAssertEqual(hasError, false, "Should insert item with attributes in the Keychain")
+        XCTAssertNoThrow(try keychain.insertItemWithAttributes(item.attributes), "Should insert item with attributes in the Keychain")
     }
     
     func testInsertItemWithAttributesThrowsError() {
         
         let attributes = ["a": "b"]
         let keychain = Keychain()
-        var hasError = false
-        
-        do {
-            
-            try keychain.insertItemWithAttributes(attributes)
-            
-        } catch {
-            
-            hasError = true
+
+        XCTAssertThrowsError(try keychain.insertItemWithAttributes(attributes), "Should throw error when the operation fails") { error in
+            let nsError = error as NSError
+            XCTAssertEqual(nsError.domain, "swift.keychain.error")
+            XCTAssertEqual(nsError.code, Int(errSecParam))
         }
-        
-        XCTAssertEqual(hasError, true, "Should throw error when the operation fails")
     }
     
     func testRemoveItemWithAttributes() throws {
         
         let item = MockGenericPasswordItem(accountName: "John_testRemoveItemWithAttributes")
         let keychain = Keychain()
-        var hasError = false
         
         try keychain.insertItemWithAttributes(item.attributes)
         
-        do {
-        
-            try keychain.removeItemWithAttributes(item.attributes)
-        
-        } catch {
-            
-            hasError = true
-        }
-        
-        XCTAssertEqual(hasError, false, "Should remove item with attributes from the Keychain")
+        XCTAssertNoThrow(try keychain.removeItemWithAttributes(item.attributes), "Should remove item with attributes from the Keychain")
     }
     
     func testRemoveItemWithAttributesThrowsError() {
         
         let attributes = ["a": "b"]
         let keychain = Keychain()
-        var hasError = false
         
-        do {
-            
-            try keychain.removeItemWithAttributes(attributes)
-            
-        } catch {
-            
-            hasError = true
+        XCTAssertThrowsError(try keychain.removeItemWithAttributes(attributes), "Should throw error when the operation fails") { error in
+            let nsError = error as NSError
+            XCTAssertEqual(nsError.domain, "swift.keychain.error")
+            XCTAssertEqual(nsError.code, Int(errSecParam))
         }
-        
-        XCTAssertEqual(hasError, true, "Should throw error when the operation fails")
     }
     
     func testFetchItemWithAttributes() throws {
         
         let item = MockGenericPasswordItem(accountName: "John_testFetchItemWithAttributes")
         let keychain = Keychain()
-        var hasError = false
-        var fetchedToken = ""
+        var fetchedToken: String?
+        var fetchedDate: NSDate?
         
         try keychain.insertItemWithAttributes(item.attributesToSave)
         
-        do {
+        XCTAssertNoThrow(try keychain.fetchItemWithAttributes(item.attributesForFetch), "Should fetch the keychain item from the Keychain")
+        if let fetchedItem = try keychain.fetchItemWithAttributes(item.attributesForFetch) {
             
-            if let fetchedItem = try keychain.fetchItemWithAttributes(item.attributesForFetch) {
-                
-                if let data = item.dataFromAttributes(fetchedItem) {
-                
-                    fetchedToken = data["token"] as? String ?? ""
-                }
+            XCTAssertNoThrow(try item.dataFromAttributes(fetchedItem), "Should get the item data from attributes")
+            if let data = try item.dataFromAttributes(fetchedItem) {
+            
+                fetchedToken = data["token"] as? String
+                fetchedDate = data["date"] as? NSDate
             }
-            
-        } catch {
-            
-            hasError = true
         }
         
-        XCTAssertEqual(hasError, false, "Should fetch the keychain item from the Keychain")
-        XCTAssertEqual(fetchedToken, "123456", "Should return the keychain item data")
+        XCTAssertEqual(fetchedToken, "123456", "Should return the keychain item data.token")
+        XCTAssertEqual(fetchedDate, NSDate(timeIntervalSince1970: 123456), "Should return the keychain item data.date")
+    }
+    
+    func testFetchItemWithAttributesThrowsUnexpectedClassError() throws {
+        
+        let item = MockGenericPasswordItemMisconfigured(accountName: "John_testFetchItemWithAttributesThrowsUnexpectedClassError")
+        let keychain = Keychain()
+        try keychain.insertItemWithAttributes(item.attributesToSave)
+        
+        if let fetchedItem = try keychain.fetchItemWithAttributes(item.attributesForFetch) {
+            XCTAssertThrowsError(try item.dataFromAttributes(fetchedItem), "Should throw error when the operation fails") { error in
+                let nsError = error as NSError
+                XCTAssertEqual(nsError.domain, NSCocoaErrorDomain)
+                XCTAssertEqual(nsError.code, 4864)
+            }
+        }
     }
     
     func testFetchItemWithAttributesThrowsError() {
         
         let attributes = ["a": "b"]
         let keychain = Keychain()
-        var hasError = false
         
-        do {
-            
-            _ = try keychain.fetchItemWithAttributes(attributes)
-            
-        } catch {
-            
-            hasError = true
+        XCTAssertThrowsError(try keychain.fetchItemWithAttributes(attributes),  "Should throw error when the operation fails") { error in
+            let nsError = error as NSError
+            XCTAssertEqual(nsError.domain, "swift.keychain.error")
+            XCTAssertEqual(nsError.code, Int(errSecParam))
         }
-        
-        XCTAssertEqual(hasError, true, "Should throw error when the operation fails")
     }
     
     func testFetchItemWithAttributesReturnsNilIfResultIsNotADictionary() throws {

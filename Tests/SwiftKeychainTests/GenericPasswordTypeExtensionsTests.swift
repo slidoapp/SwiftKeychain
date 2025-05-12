@@ -4,30 +4,15 @@
 //
 //  Created by Yanko Dimitrov on 2/6/16.
 //  Copyright © 2016 Yanko Dimitrov. All rights reserved.
+//  Copyright © 2025 Cisco Systems, Inc.
 //
 
 import XCTest
 @testable import SwiftKeychain
 
-struct MockGenericPasswordItem: KeychainGenericPasswordType {
-    
-    let accountName: String
-    var data = KeychainData()
-    
-    var dataToStore: KeychainData {
-        
-        return ["token": "123456"]
-    }
-    
-    init(accountName: String) {
-        
-        self.accountName = accountName
-    }
-}
-
 class GenericPasswordTypeExtensionsTests: XCTestCase {
     
-    func testDefaultSerciceName() {
+    func testDefaultServiceName() {
         
         let item = MockGenericPasswordItem(accountName: "John")
         let expectedServiceName = "swift.keychain.service"
