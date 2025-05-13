@@ -4,51 +4,11 @@
 //
 //  Created by Yanko Dimitrov on 2/6/16.
 //  Copyright © 2016 Yanko Dimitrov. All rights reserved.
+//  Copyright © 2025 Cisco Systems, Inc.
 //
 
 import XCTest
 @testable import SwiftKeychain
-
-struct MockKeychainItem: KeychainItemType {
-    
-    var attributes: KeychainAttributes {
-        
-        return [String(kSecClass): kSecClassGenericPassword]
-    }
-    
-    var data = KeychainData()
-    
-    var dataToStore: KeychainData {
-        
-        return ["token": "123456"]
-    }
-}
-
-class MockKeychain: KeychainServiceType {
-    
-    var isInsertCalled = false
-    var isRemoveCalled = false
-    var isFetchCalled = false
-    
-    func insertItemWithAttributes(_ attributes: KeychainAttributes) throws {
-        
-        isInsertCalled = true
-    }
-    
-    func removeItemWithAttributes(_ attributes: KeychainAttributes) throws {
-        
-        isRemoveCalled = true
-    }
-    
-    func fetchItemWithAttributes(_ attributes: KeychainAttributes) throws -> KeychainItem? {
-        
-        isFetchCalled = true
-        
-        let data = try NSKeyedArchiver.archivedData(withRootObject: ["token": "123456"], requiringSecureCoding: false)
-        
-        return [String(kSecValueData): data]
-    }
-}
 
 class KeychainItemTypeExtensionsTests: XCTestCase {
     
@@ -61,10 +21,12 @@ class KeychainItemTypeExtensionsTests: XCTestCase {
     
     func testAttributesToSave() throws {
         
-        let item = MockKeychainItem()
+        let item = MockKeychainItemSimple()
         
         let expectedSecClass = String(kSecClassGenericPassword)
-        let expectedData = try NSKeyedArchiver.archivedData(withRootObject: ["token": "123456"], requiringSecureCoding: false)
+        let expectedData = try NSKeyedArchiver.archivedData(withRootObject: [
+            "token": "123456"
+        ], requiringSecureCoding: true)
         
         let attriburesToSave = item.attributesToSave
         
@@ -75,36 +37,39 @@ class KeychainItemTypeExtensionsTests: XCTestCase {
         XCTAssertEqual(secValueData, expectedData, "Should contain the key data")
     }
     
-    func testDataFromAttributes() {
+    func testDataFromAttributes() throws {
         
         let item = MockKeychainItem()
         let attributes = item.attributesToSave
-        var token = ""
+        var token: String?
+        var date: NSDate?
         
-        if let itemToken = item.dataFromAttributes(attributes)?["token"] as? String {
+        if let data = try item.dataFromAttributes(attributes) {
             
-            token = itemToken
+            token = data["token"] as? String
+            date = data["date"] as? NSDate
         }
         
-        XCTAssertEqual(token, "123456", "Should return the item data dictionary")
+        XCTAssertEqual(token, "123456", "Should return the item data.token")
+        XCTAssertEqual(date?.timeIntervalSince1970, 123456, "Should return the item data.date")
     }
     
-    func testDataFromAttributesWillReturnNilWhenThereIsNoData() {
+    func testDataFromAttributesWillReturnNilWhenThereIsNoData() throws {
         
         let item = MockKeychainItem()
         let attributes = ["a": "b"]
         
-        let data = item.dataFromAttributes(attributes)
+        let data = try item.dataFromAttributes(attributes)
         
         XCTAssertNil(data, "Should return nil if there is no data")
     }
     
-    func testDataFromAttributesWillReturnNilWhenDataIsNotDictionary() {
+    func testDataFromAttributesWillReturnNilWhenDataIsNotDictionary() throws {
         
         let item = MockKeychainItem()
-        let itemData = NSKeyedArchiver.archivedData(withRootObject: ["a"])
+        let itemData = try NSKeyedArchiver.archivedData(withRootObject: NSDate(), requiringSecureCoding: true)
         let attributes = [String(kSecValueData): itemData]
-        let data = item.dataFromAttributes(attributes)
+        let data = try item.dataFromAttributes(attributes)
         
         XCTAssertNil(data, "Should return nil if the data is not a dictionary")
     }
@@ -149,8 +114,10 @@ class KeychainItemTypeExtensionsTests: XCTestCase {
         
         let result = try item.fetchFromKeychain(keychain)
         
-        let token = result.data["token"] as? String ?? ""
+        let token = result.data["token"] as? String
+        let date = result.data["date"] as? NSDate
         
-        XCTAssertEqual(token, "123456", "Should populate the item's data from the Keychain")
+        XCTAssertEqual(token, "123456", "Should populate the item's data.token from the Keychain")
+        XCTAssertEqual(date, NSDate(timeIntervalSince1970: 123456), "Should populate the item's data.date from the Keychain")
     }
 }
